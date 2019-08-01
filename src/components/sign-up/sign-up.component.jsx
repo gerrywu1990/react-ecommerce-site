@@ -1,9 +1,12 @@
 import React from 'react'
 
-import './sign-up.styles.scss'
-
 import FormInput from '../form-input/form-input.component'
 import CustomButton from '../custom-button/custom-button.component'
+
+import { auth, createUserProfileDocument } from '../../firebase/firebase.utils'
+
+import './sign-up.styles.scss'
+import { of } from 'rxjs'
 
 class SignUp extends React.Component {
   constructor(props) {
@@ -17,9 +20,22 @@ class SignUp extends React.Component {
     }
   }
 
-  handleSubmit = event => {
+  handleSubmit = async event => {
     event.preventDefault()
-    this.setState({ displayName: '', email: '', password: '', confirmPassword: '' })
+    const { displayName, email, password, confirmPassword } = this.state
+
+    if (password !== confirmPassword) {
+      alert("password don't match")
+      return
+    }
+
+    try {
+      const { user } = await auth.createUserWithEmailAndPassword(email, password)
+
+      createUserProfileDocument(user, { displayName })
+    } catch (error) {
+      console.error(error)
+    }
   }
 
   handleChange = event => {
@@ -28,6 +44,7 @@ class SignUp extends React.Component {
   }
 
   render() {
+    const { displayName, email, password, confirmPassword } = this.state
     return (
       <div className="sign-up">
         <form onSubmit={this.handleSubmit}>
@@ -37,7 +54,7 @@ class SignUp extends React.Component {
             name="displayName"
             type="text"
             label="Display Name"
-            value={this.state.displayName}
+            value={displayName}
             onChange={this.handleChange}
             required
           />
@@ -45,7 +62,7 @@ class SignUp extends React.Component {
             name="email"
             type="email"
             label="email"
-            value={this.state.email}
+            value={email}
             onChange={this.handleChange}
             required
           />
@@ -53,7 +70,7 @@ class SignUp extends React.Component {
             name="password"
             type="password"
             label="password"
-            value={this.state.password}
+            value={password}
             onChange={this.handleChange}
             required
           />
@@ -61,7 +78,7 @@ class SignUp extends React.Component {
             name="confirmPassword"
             type="password"
             label="Confirm Password"
-            value={this.state.confirmPassword}
+            value={confirmPassword}
             onChange={this.handleChange}
             required
           />
